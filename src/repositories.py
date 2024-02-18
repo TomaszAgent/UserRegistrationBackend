@@ -18,12 +18,6 @@ class UsersRepository:
     def get_users(self) -> list[dict[str, str | int]]:
         return self._users
 
-    def get_user(self, id: int) -> dict[str, str | int] | None:
-        for user in self._users:
-            if user["id"] == id:
-                return user
-        return None
-
     def update_user(self, id: int, first_name=None, last_name=None, birth_year=None, group=None) -> None:
         user = None
         for potential_user in self._users:
