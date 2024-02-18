@@ -42,3 +42,11 @@ class UsersRepository:
             user["birth_year"] = birth_year
         if group is not None:
             user["group"] = group
+
+    def delete_user(self, id: int) -> None:
+        for user_index, user in enumerate(self._users):
+            if user["id"] == id:
+                self._users.pop(user_index)
+                return
+
+        raise ValueError("Id not in users.")
