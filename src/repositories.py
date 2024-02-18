@@ -18,7 +18,7 @@ class UsersRepository:
     def get_users(self) -> list[dict[str, str | int]]:
         return self._users
 
-    def update_user(self, id: int, first_name=None, last_name=None, birth_year=None, group=None) -> None:
+    def update_user(self, id: int, first_name, last_name, birth_year, group) -> None:
         user = None
         for potential_user in self._users:
             if potential_user["id"] == id:

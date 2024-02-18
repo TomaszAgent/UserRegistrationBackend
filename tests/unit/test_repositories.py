@@ -32,7 +32,7 @@ def test_users_repository_adds_users(users_repository: UsersRepository) -> None:
 
 def test_users_updates_users(users_repository: UsersRepository) -> None:
     users_repository.add_user('test', 'test', 2000, 'user')
-    users_repository.update_user(0, first_name='test2')
+    users_repository.update_user(0, 'test2', None, None, None)
     actual = users_repository.get_users()
     assert actual == [{
             'id': 0,
