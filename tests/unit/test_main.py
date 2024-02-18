@@ -2,8 +2,7 @@ from src.main import ping
 
 
 def test_ping_exists() -> None:
-    actual = ping
-    assert actual
+    assert ping
 
 
 def test_ping_returns_right_value() -> None:
