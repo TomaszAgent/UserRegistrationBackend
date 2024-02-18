@@ -16,3 +16,20 @@ class CreateUserController:
             raise ValueError("Invalid group.")
 
         self._repository.add_user(first_name, last_name, birth_year, group)
+
+
+class GetUsersController:
+    def __init__(self, repository: UsersRepository) -> None:
+        self._repository = repository
+
+    def get(self, id: int | None = None):
+        users = self._repository.get_users()
+
+        if id is None:
+            return users
+
+        for user in users:
+            if user["id"] == id:
+                return user
+
+        raise ValueError("Invalid id.")
