@@ -2,7 +2,7 @@ import pytest
 
 from unittest.mock import Mock
 
-from src.controllers import CreateUserController
+from src.controllers import CreateUserController, GetUsersController
 
 from src.repositories import UsersRepository
 
@@ -15,6 +15,11 @@ def users_repository() -> Mock:
 @pytest.fixture()
 def create_user_controller(users_repository: Mock) -> CreateUserController:
     return CreateUserController(repository=users_repository)
+
+
+@pytest.fixture()
+def get_users_controller(users_repository: Mock) -> GetUsersController:
+    return GetUsersController(repository=users_repository)
 
 
 def test_create_user_controller_exists() -> None:
@@ -63,3 +68,52 @@ def test_create_user_raises_group_value_error(create_user_controller: CreateUser
     with pytest.raises(ValueError) as actual:
         create_user_controller.create("test", "test", 2000, "person")
     assert str(actual.value) == "Invalid group."
+
+
+def test_get_users_raises_value_error(get_users_controller: GetUsersController, users_repository: Mock) -> None:
+    users_repository.get_users.return_value = []
+    with pytest.raises(ValueError) as actual:
+        get_users_controller.get(0)
+    assert str(actual.value) == "Invalid id."
+
+
+def test_get_users_returns_users(get_users_controller: GetUsersController, users_repository: Mock) -> None:
+    users_repository.get_users.return_value = [
+        {
+            'id': 0,
+            'first_name': 'test',
+            'last_name': 'test',
+            'birth_year': 2000,
+            'group': 'user'
+        }
+    ]
+    actual = get_users_controller.get()
+    assert actual == [
+        {
+            'id': 0,
+            'first_name': 'test',
+            'last_name': 'test',
+            'birth_year': 2000,
+            'group': 'user'
+        }
+    ]
+
+
+def test_get_users_returns_user_by_id(get_users_controller: GetUsersController, users_repository: Mock) -> None:
+    users_repository.get_users.return_value = [
+        {
+            'id': 0,
+            'first_name': 'test',
+            'last_name': 'test',
+            'birth_year': 2000,
+            'group': 'user'
+        }
+    ]
+    actual = get_users_controller.get(0)
+    assert actual == {
+            'id': 0,
+            'first_name': 'test',
+            'last_name': 'test',
+            'birth_year': 2000,
+            'group': 'user'
+        }
