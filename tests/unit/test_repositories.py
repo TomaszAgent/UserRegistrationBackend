@@ -28,3 +28,16 @@ def test_users_repository_adds_users(users_repository: UsersRepository) -> None:
             'group': 'user'
         }
     ]
+
+
+def test_users_returns_user_by_id(users_repository: UsersRepository) -> None:
+    users_repository.add_user('test', 'test', 2000, 'user')
+    actual = users_repository.get_user(0)
+    assert actual == {
+            'id': 0,
+            'first_name': 'test',
+            'last_name': 'test',
+            'birth_year': 2000,
+            'group': 'user'
+        }
+
