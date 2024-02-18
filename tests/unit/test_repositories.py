@@ -45,3 +45,16 @@ def test_users_returns_user_by_id(users_repository: UsersRepository) -> None:
 def test_users_returns_none_for_bad_id(users_repository: UsersRepository) -> None:
     actual = users_repository.get_user(0)
     assert actual is None
+
+
+def test_update_users_updates_users(users_repository: UsersRepository) -> None:
+    users_repository.add_user('test', 'test', 2000, 'user')
+    users_repository.update_user(0, {'first_name': 'test2'})
+    actual = users_repository.get_user(0)
+    assert actual == {
+            'id': 0,
+            'first_name': 'test2',
+            'last_name': 'test',
+            'birth_year': 2000,
+            'group': 'user'
+        }
