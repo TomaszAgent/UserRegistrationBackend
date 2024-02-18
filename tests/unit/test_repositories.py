@@ -41,3 +41,7 @@ def test_users_returns_user_by_id(users_repository: UsersRepository) -> None:
             'group': 'user'
         }
 
+
+def test_users_returns_none_for_bad_id(users_repository: UsersRepository) -> None:
+    actual = users_repository.get_user(0)
+    assert actual is None
