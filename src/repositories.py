@@ -1,5 +1,5 @@
 class UsersRepository:
-    def __init__(self):
+    def __init__(self) -> None:
         self._users: list[dict[str, str | int]] = []
         self._last_available_id = 0
 
