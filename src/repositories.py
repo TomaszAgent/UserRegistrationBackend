@@ -31,9 +31,6 @@ class UsersRepository:
                 user = potential_user
                 break
 
-        if user is None:
-            raise ValueError("Id not in users.")
-
         if first_name is not None:
             user["first_name"] = first_name
         if last_name is not None:
@@ -48,5 +45,3 @@ class UsersRepository:
             if user["id"] == id:
                 self._users.pop(user_index)
                 return
-
-        raise ValueError("Id not in users.")
