@@ -51,3 +51,15 @@ def test_create_user_raises_group_type_error(create_user_controller: CreateUserC
     with pytest.raises(TypeError) as actual:
         create_user_controller.create("test", "test", 2000, 0)
     assert str(actual.value) == "One of arguments was of invalid type."
+
+
+def test_create_user_raises_birth_year_value_error(create_user_controller: CreateUserController) -> None:
+    with pytest.raises(ValueError) as actual:
+        create_user_controller.create("test", "test", 3000, "user")
+    assert str(actual.value) == "The user can't be from the future."
+
+
+def test_create_user_raises_group_value_error(create_user_controller: CreateUserController) -> None:
+    with pytest.raises(ValueError) as actual:
+        create_user_controller.create("test", "test", 2000, "person")
+    assert str(actual.value) == "Invalid group."
