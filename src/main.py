@@ -1,5 +1,7 @@
 from flask import Flask
 
+from src.controllers import CreateUserController, GetUsersController, UpdateUserController, DeleteUserController
+
 app = Flask(__name__)
 
 

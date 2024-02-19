@@ -1,6 +1,6 @@
 import datetime
 
-from src.repositories import UsersRepository
+from src.repositories import UsersRepository, users_repository
 
 
 class CreateUserController:
@@ -90,3 +90,9 @@ class DeleteUserController:
             raise ValueError("Invalid id.")
 
         self._repository.delete_user(id)
+
+
+create_users_controller = CreateUserController(users_repository)
+get_users_controller = GetUsersController(users_repository)
+update_users_controller = UpdateUserController(users_repository)
+delete_users_controller = DeleteUserController(users_repository)

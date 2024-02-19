@@ -39,3 +39,6 @@ class UsersRepository:
             if user["id"] == id:
                 self._users.pop(user_index)
                 return
+
+
+users_repository = UsersRepository()
