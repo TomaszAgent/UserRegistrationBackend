@@ -2,7 +2,7 @@ import pytest
 
 from unittest.mock import Mock
 
-from src.controllers import CreateUserController, GetUsersController, UpdateUserController
+from src.controllers import CreateUserController, GetUsersController, UpdateUserController, DeleteUserController
 
 from src.repositories import UsersRepository
 
@@ -25,6 +25,11 @@ def get_users_controller(users_repository: Mock) -> GetUsersController:
 @pytest.fixture()
 def update_user_controller(users_repository: Mock) -> UpdateUserController:
     return UpdateUserController(repository=users_repository)
+
+
+@pytest.fixture()
+def delete_user_controller(users_repository: Mock) -> DeleteUserController:
+    return DeleteUserController(repository=users_repository)
 
 
 def test_create_user_controller_exists() -> None:
@@ -244,3 +249,28 @@ def test_update_passes_user(
                                   }
                                   )
     users_repository.update_user.assert_called_with(0, "test", "test", 2000, "user")
+
+
+def test_delete_user_raises_value_error(
+        delete_user_controller: DeleteUserController,
+        users_repository: UsersRepository
+) -> None:
+    users_repository.get_users.return_value = []
+    with pytest.raises(ValueError) as actual:
+        delete_user_controller.delete(0)
+    assert str(actual.value) == "Invalid id."
+
+
+def test_delete_user_passes_id(
+        delete_user_controller: DeleteUserController,
+        users_repository: UsersRepository
+) -> None:
+    users_repository.get_users.return_value = [{
+        "id": 0,
+        "first_name": "test",
+        "last_name": "test",
+        "birth_year": 2000,
+        "group": "user"
+    }]
+    delete_user_controller.delete(0)
+    users_repository.delete_user.assert_called_with(0)
