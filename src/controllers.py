@@ -71,3 +71,19 @@ class UpdateUserController:
 
         self._repository.update_user(id, first_name, last_name, birth_year, group)
 
+
+class DeleteUserController:
+    def __init__(self, repository: UsersRepository):
+        self._repository = repository
+
+    def delete(self, id: int):
+        users = self._repository.get_users()
+        found = False
+        for user in users:
+            if user["id"] == id:
+                found = True
+                break
+        if not found:
+            raise ValueError("Invalid id.")
+
+        self._repository.delete_user(id)
