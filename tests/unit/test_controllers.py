@@ -103,7 +103,7 @@ def test_get_users_returns_users(get_users_controller: GetUsersController, users
             'id': 0,
             'first_name': 'test',
             'last_name': 'test',
-            'birth_year': 2000,
+            'age': 24,
             'group': 'user'
         }
     ]
@@ -124,7 +124,7 @@ def test_get_users_returns_user_by_id(get_users_controller: GetUsersController, 
         'id': 0,
         'first_name': 'test',
         'last_name': 'test',
-        'birth_year': 2000,
+        'age': 24,
         'group': 'user'
     }
 
