@@ -23,8 +23,11 @@ class GetUsersController:
         self._repository = repository
 
     def get(self, id: int | None = None):
-        users = self._repository.get_users()
-
+        users = self._repository.get_users().copy()
+        for user in users:
+            current_year = datetime.date.today().year
+            user["age"] = current_year - user["birth_year"]
+            user.pop("birth_year")
         if id is None:
             return users
 
