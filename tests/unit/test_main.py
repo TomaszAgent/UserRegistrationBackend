@@ -108,25 +108,67 @@ def test_post_user_returns_right_200_code(user: dict[str, int | str]) -> None:
 
 
 def test_post_user_returns_right_400_code() -> None:
-    with (patch("src.main.create_users_controller") as create_users_controller,
-          app.test_request_context(json={
-              "first_name": "test",
-              "last_name": "test",
-              "birth_year": 2000
-          })):
+    with (
+        patch("src.main.create_users_controller") as create_users_controller,
+        app.test_request_context(json={
+            "first_name": "test",
+            "last_name": "test",
+            "birth_year": 2000
+        })
+    ):
         create_users_controller.create.side_effect = ValueError("Missing one of the arguments.")
         actual = post_user().status
     assert actual == BAD_REQUEST
 
 
 def test_post_user_returns_right_error_code() -> None:
-    with (patch("src.main.create_users_controller") as create_users_controller,
-          app.test_request_context(json={
-              "first_name": "test",
-              "last_name": "test",
-              "birth_year": 2000
-          })):
+    with (
+        patch("src.main.create_users_controller") as create_users_controller,
+        app.test_request_context(json={
+            "first_name": "test",
+            "last_name": "test",
+            "birth_year": 2000
+        })
+    ):
         create_users_controller.create.side_effect = ValueError("Missing one of the arguments.")
         actual = post_user().data
     assert actual == "Missing one of the arguments.".encode()
+
+
+def test_patch_user_passes_right_values(user: dict[str, int | str]) -> None:
+    with (
+        patch("src.main.update_users_controller") as update_users_controller,
+        app.test_request_context(json=user)
+    ):
+        patch_user(0)
+    update_users_controller.update.assert_called_with(0, user)
+
+
+def test_patch_user_returns_right_200_code() -> None:
+    with (
+        patch("src.main.update_users_controller"),
+        app.test_request_context(json=user)
+    ):
+        actual = patch_user(0).status
+    assert actual == CREATED
+
+
+def test_patch_user_returns_right_400_code() -> None:
+    with (
+        patch("src.main.update_users_controller") as update_users_controller,
+        app.test_request_context(json=user)
+    ):
+        update_users_controller.update.side_effect = ValueError
+        actual = patch_user(0).status
+    assert actual == BAD_REQUEST
+
+
+def test_patch_user_returns_right_error_code() -> None:
+    with (
+        patch("src.main.update_users_controller") as update_users_controller,
+        app.test_request_context(json=user)
+    ):
+        update_users_controller.update.side_effect = ValueError("Invalid id.")
+        actual = patch_user(0).data
+    assert actual == "Invalid id."
 
