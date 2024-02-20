@@ -56,6 +56,5 @@ def delete_user(id: int) -> Response:
         return Response(response=str(error), status=BAD_REQUEST)
 
 
-
 if __name__ == "__main__":
     app.run("localhost", 8080)
