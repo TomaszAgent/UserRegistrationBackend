@@ -2,7 +2,7 @@ from flask import Flask, Response, request
 import json
 
 from src.controllers import create_users_controller, get_users_controller, update_users_controller, delete_users_controller
-from src.STATUS_CODES import OK, BAD_REQUEST, CREATED
+from src.STATUS_CODES import OK, BAD_REQUEST, CREATED, NO_CONTENT
 
 app = Flask(__name__)
 
@@ -35,6 +35,17 @@ def post_user() -> Response:
         return Response(status=CREATED)
     except (ValueError, TypeError) as error:
         return Response(response=str(error), status=BAD_REQUEST)
+
+
+@app.patch("/users/<id>")
+def patch_user(id: int) -> Response:
+    data = request.get_json()
+    try:
+        update_users_controller.update(id, data)
+        return Response(status=NO_CONTENT)
+    except (ValueError, TypeError) as error:
+        return Response(response=str(error), status=BAD_REQUEST)
+
 
 
 if __name__ == "__main__":
