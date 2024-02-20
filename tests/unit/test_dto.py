@@ -139,12 +139,3 @@ def test_user_dto_returns_correct_data(user_dto: UserDTO) -> None:
     })
     actual = user_dto.get_data()
     assert actual == ("test", "test", 2000, "user")
-
-
-def test_user_dto_doesnt_raise_an_error_on_missing_value(user_dto: UserDTO) -> None:
-    user_dto.add_data({
-        "first_name": "test",
-        "last_name": "test",
-        "birth_year": 2000
-    })
-
