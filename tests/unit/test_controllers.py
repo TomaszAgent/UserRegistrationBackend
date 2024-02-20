@@ -6,6 +6,8 @@ from src.controllers import CreateUserController, GetUsersController, UpdateUser
 
 from src.repositories import UsersRepository
 
+from src.data_transfer_objects import UserDTO
+
 
 @pytest.fixture()
 def users_repository() -> Mock:
@@ -13,8 +15,13 @@ def users_repository() -> Mock:
 
 
 @pytest.fixture()
-def create_user_controller(users_repository: Mock) -> CreateUserController:
-    return CreateUserController(repository=users_repository)
+def user_dto() -> Mock:
+    return Mock(UserDTO)
+
+
+@pytest.fixture()
+def create_user_controller(users_repository: Mock, user_dto: UserDTO) -> CreateUserController:
+    return CreateUserController(repository=users_repository, dto=user_dto)
 
 
 @pytest.fixture()
@@ -23,8 +30,8 @@ def get_users_controller(users_repository: Mock) -> GetUsersController:
 
 
 @pytest.fixture()
-def update_user_controller(users_repository: Mock) -> UpdateUserController:
-    return UpdateUserController(repository=users_repository)
+def update_user_controller(users_repository: Mock, user_dto: UserDTO) -> UpdateUserController:
+    return UpdateUserController(repository=users_repository, dto=user_dto)
 
 
 @pytest.fixture()
@@ -36,48 +43,52 @@ def test_create_user_controller_exists() -> None:
     assert create_user_controller
 
 
-def test_create_user_controller_passes_user(
+def test_create_user_controller_passes_user_data(
         create_user_controller: CreateUserController,
-        users_repository: Mock
+        users_repository: Mock,
+        user_dto: Mock
 ) -> None:
-    create_user_controller.create("test", "test", 2000, "user")
+    user_dto.get_data.return_value = ("test", "test", 2000, "user")
+    create_user_controller.create({
+        "first_name": "test",
+        "last_name": "test",
+        "birth_year": 2000,
+        "group": "user"
+    })
     users_repository.add_user.assert_called_with("test", "test", 2000, "user")
 
 
-def test_create_user_raises_first_name_type_error(create_user_controller: CreateUserController) -> None:
-    with pytest.raises(TypeError) as actual:
-        create_user_controller.create(0, "test", 2000, "user")
-    assert str(actual.value) == "One of arguments was of invalid type."
+def test_create_user_passes_user_dict(
+        create_user_controller: CreateUserController,
+        user_dto: Mock
+) -> None:
+    user_dto.get_data.return_value = ("test", "test", 2000, "user")
+    create_user_controller.create({
+        "first_name": "test",
+        "last_name": "test",
+        "birth_year": 2000,
+        "group": "user"
+    })
+    user_dto.add_data.assert_called_with({
+        "first_name": "test",
+        "last_name": "test",
+        "birth_year": 2000,
+        "group": "user"
+    })
 
 
-def test_create_user_raises_last_name_type_error(create_user_controller: CreateUserController) -> None:
-    with pytest.raises(TypeError) as actual:
-        create_user_controller.create("test", 0, 2000, "user")
-    assert str(actual.value) == "One of arguments was of invalid type."
-
-
-def test_create_user_raises_birth_year_type_error(create_user_controller: CreateUserController) -> None:
-    with pytest.raises(TypeError) as actual:
-        create_user_controller.create("test", "test", "test", "user")
-    assert str(actual.value) == "One of arguments was of invalid type."
-
-
-def test_create_user_raises_group_type_error(create_user_controller: CreateUserController) -> None:
-    with pytest.raises(TypeError) as actual:
-        create_user_controller.create("test", "test", 2000, 0)
-    assert str(actual.value) == "One of arguments was of invalid type."
-
-
-def test_create_user_raises_birth_year_value_error(create_user_controller: CreateUserController) -> None:
+def test_create_user_raises_value_error(
+        create_user_controller: CreateUserController,
+        user_dto: Mock
+) -> None:
+    user_dto.get_data.return_value = ("test", "test", None, "user")
     with pytest.raises(ValueError) as actual:
-        create_user_controller.create("test", "test", 3000, "user")
-    assert str(actual.value) == "The user can't be from the future."
-
-
-def test_create_user_raises_group_value_error(create_user_controller: CreateUserController) -> None:
-    with pytest.raises(ValueError) as actual:
-        create_user_controller.create("test", "test", 2000, "person")
-    assert str(actual.value) == "Invalid group."
+        create_user_controller.create({
+            "first_name": "test",
+            "last_name": "test",
+            "group": "user"
+        })
+    assert str(actual.value) == "Missing one of the arguments."
 
 
 def test_get_users_raises_value_error(get_users_controller: GetUsersController, users_repository: Mock) -> None:
@@ -129,126 +140,98 @@ def test_get_users_returns_user_by_id(get_users_controller: GetUsersController, 
     }
 
 
-def test_update_user_raises_value_error_on_user(update_user_controller: UpdateUserController) -> None:
-    with pytest.raises(ValueError) as actual:
-        update_user_controller.update(0, {"class": "test"})
-    assert str(actual.value) == "Invalid user data."
-
-
-def test_update_user_raises_first_name_type_error(update_user_controller: UpdateUserController) -> None:
-    with pytest.raises(TypeError) as actual:
-        update_user_controller.update(0,
-                                      {
-                                          "first_name": 0,
-                                          "last_name": "test",
-                                          "birth_year": 2000,
-                                          "group": "user"
-                                      }
-                                      )
-    assert str(actual.value) == "One of arguments was of invalid type."
-
-
-def test_update_user_raises_last_name_type_error(update_user_controller: UpdateUserController) -> None:
-    with pytest.raises(TypeError) as actual:
-        update_user_controller.update(0,
-                                      {
-                                          "first_name": "test",
-                                          "last_name": 0,
-                                          "birth_year": 2000,
-                                          "group": "user"
-                                      }
-                                      )
-    assert str(actual.value) == "One of arguments was of invalid type."
-
-
-def test_update_user_raises_birth_year_type_error(update_user_controller: UpdateUserController) -> None:
-    with pytest.raises(TypeError) as actual:
-        update_user_controller.update(0,
-                                      {
-                                          "first_name": "test",
-                                          "last_name": "test",
-                                          "birth_year": "2000",
-                                          "group": "user"
-                                      }
-                                      )
-    assert str(actual.value) == "One of arguments was of invalid type."
-
-
-def test_update_user_raises_group_type_error(update_user_controller: UpdateUserController) -> None:
-    with pytest.raises(TypeError) as actual:
-        update_user_controller.update(0,
-                                      {
-                                          "first_name": "test",
-                                          "last_name": "test",
-                                          "birth_year": 2000,
-                                          "group": 0
-                                      }
-                                      )
-    assert str(actual.value) == "One of arguments was of invalid type."
-
-
-def test_update_user_raises_year_value_error(update_user_controller: UpdateUserController) -> None:
-    with pytest.raises(ValueError) as actual:
-        update_user_controller.update(0,
-                                      {
-                                          "first_name": "test",
-                                          "last_name": "test",
-                                          "birth_year": 3000,
-                                          "group": "user"
-                                      }
-                                      )
-    assert str(actual.value) == "The user can't be from the future."
-
-
-def test_update_user_raises_group_value_error(update_user_controller: UpdateUserController) -> None:
-    with pytest.raises(ValueError) as actual:
-        update_user_controller.update(0,
-                                      {
-                                          "first_name": "test",
-                                          "last_name": "test",
-                                          "birth_year": 2000,
-                                          "group": "person"
-                                      }
-                                      )
-    assert str(actual.value) == "Invalid group."
-
-
-def test_update_user_raises_id_value_error(
+def test_update_user_controller_passes_user_data(
         update_user_controller: UpdateUserController,
-        users_repository: UsersRepository) -> None:
-    users_repository.get_users.return_value = []
-    with pytest.raises(ValueError) as actual:
-        update_user_controller.update(0,
-                                      {
-                                          "first_name": "test",
-                                          "last_name": "test",
-                                          "birth_year": 2000,
-                                          "group": "user"
-                                      }
-                                      )
-    assert str(actual.value) == "Invalid id."
-
-
-def test_update_passes_user(
-        update_user_controller: UpdateUserController,
-        users_repository: UsersRepository) -> None:
-    users_repository.get_users.return_value = [{
-        "id": 0,
+        users_repository: Mock,
+        user_dto: Mock
+) -> None:
+    user_dto.get_data.return_value = ("test", "test", 2000, "user")
+    users_repository.get_users.return_value = [
+        {
+            'id': 0,
+            'first_name': 'test',
+            'last_name': 'test',
+            'birth_year': 2000,
+            'group': 'user'
+        }
+    ]
+    update_user_controller.update(0, {
         "first_name": "test",
         "last_name": "test",
         "birth_year": 2000,
         "group": "user"
-    }
-    ]
-    update_user_controller.update(0,
-                                  {
-                                      "first_name": "test",
-                                      "last_name": "test",
-                                      "birth_year": 2000,
-                                      "group": "user"
-                                  }
-                                  )
+    })
     users_repository.update_user.assert_called_with(0, "test", "test", 2000, "user")
+
+
+def test_update_user_controller_passes_user_dict(
+        update_user_controller: UpdateUserController,
+        users_repository: Mock,
+        user_dto: Mock
+) -> None:
+    user_dto.get_data.return_value = ("test", "test", 2000, "user")
+    users_repository.get_users.return_value = [
+        {
+            'id': 0,
+            'first_name': 'test',
+            'last_name': 'test',
+            'birth_year': 2000,
+            'group': 'user'
+        }
+    ]
+    update_user_controller.update(0, {
+        "first_name": "test",
+        "last_name": "test",
+        "birth_year": 2000,
+        "group": "user"
+    })
+    user_dto.add_data.assert_called_with({
+        "first_name": "test",
+        "last_name": "test",
+        "birth_year": 2000,
+        "group": "user"
+    })
+
+
+def test_update_user_raises_type_error_on_id(
+        update_user_controller: UpdateUserController,
+        users_repository: Mock,
+        user_dto: Mock
+) -> None:
+    user_dto.get_data.return_value = ("test", "test", 2000, "user")
+    with pytest.raises(TypeError) as actual:
+        update_user_controller.update("0", {
+            "first_name": "test",
+            "last_name": "test",
+            "birth_year": 2000,
+            "group": "user"
+        })
+    assert str(actual.value) == "One of arguments was of invalid type."
+
+
+def test_update_user_raises_value_error_on_id(
+        update_user_controller: UpdateUserController,
+        users_repository: Mock,
+        user_dto: Mock
+) -> None:
+    user_dto.get_data.return_value = ("test", "test", 2000, "user")
+    users_repository.get_users.return_value = [
+        {
+            'id': 0,
+            'first_name': 'test',
+            'last_name': 'test',
+            'birth_year': 2000,
+            'group': 'user'
+        }
+    ]
+    with pytest.raises(ValueError) as actual:
+        update_user_controller.update(1, {
+            "first_name": "test",
+            "last_name": "test",
+            "birth_year": 2000,
+            "group": "user"
+        })
+    assert str(actual.value) == "Invalid id."
 
 
 def test_delete_user_raises_value_error(
