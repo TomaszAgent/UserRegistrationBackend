@@ -194,6 +194,6 @@ def test_delete_user_returns_right_400_code() -> None:
 
 def test_delete_user_returns_right_error_code() -> None:
     with patch("src.main.delete_users_controller") as delete_users_controller:
-        delete_users_controller.delete.side_effect = ValueError()
+        delete_users_controller.delete.side_effect = ValueError("Invalid id.")
         actual = delete_user(0).data
-    assert actual == "Invalid id."
+    assert actual == "Invalid id.".encode()
