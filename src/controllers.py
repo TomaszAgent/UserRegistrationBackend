@@ -2,18 +2,25 @@ import datetime
 
 from src.repositories import UsersRepository, users_repository
 
+from src.data_transfer_objects import UserDTO, user_dto
+
 
 class CreateUserController:
-    def __init__(self, repository: UsersRepository) -> None:
+    def __init__(self, repository: UsersRepository, dto: UserDTO) -> None:
         self._repository = repository
+        self._dto = dto
 
-    def create(self, first_name: str, last_name: str, birth_year: int, group: str):
-        if type(first_name) != str or type(last_name) != str or type(birth_year) != int or type(group) != str:
-            raise TypeError("One of arguments was of invalid type.")
-        if birth_year > datetime.date.today().year:
-            raise ValueError("The user can't be from the future.")
-        if group not in ["user", "premium", "admin"]:
-            raise ValueError("Invalid group.")
+    def create(self, user: dict[str, str | int]):
+        self._dto.add_data(user)
+        data = self._dto.get_data()
+
+        if None in data:
+            raise ValueError("Missing one of the arguments.")
+
+        first_name = data[0]
+        last_name = data[1]
+        birth_year = data[2]
+        group = data[3]
 
         self._repository.add_user(first_name, last_name, birth_year, group)
 
@@ -39,35 +46,27 @@ class GetUsersController:
 
 
 class UpdateUserController:
-    def __init__(self, repository: UsersRepository) -> None:
+    def __init__(self, repository: UsersRepository, dto: UserDTO) -> None:
         self._repository = repository
+        self._dto = dto
 
     def update(self, id: int, user: dict[str, str | int | None]) -> None:
-        for key in list(user.keys()):
-            if key not in ["first_name", "last_name", "birth_year", "group"]:
-                raise ValueError("Invalid user data.")
-        for key in [key for key in ["first_name", "last_name", "birth_year", "group"] if key not in list(user.keys())]:
-            user[key] = None
-        first_name = user["first_name"]
-        last_name = user["last_name"]
-        birth_year = user["birth_year"]
-        group = user["group"]
-        id_type_check = type(id) == int
-        names_type_check = type(first_name) == str and type(last_name) == str
-        year_type_check = type(birth_year) == int
-        group_type_check = type(group) == str
-        if not id_type_check or not names_type_check or not year_type_check or not group_type_check:
+        self._dto.add_data(user)
+        data = self._dto.get_data()
+        first_name = data[0]
+        last_name = data[1]
+        birth_year = data[2]
+        group = data[3]
+
+        if type(id) != int:
             raise TypeError("One of arguments was of invalid type.")
-        if birth_year > datetime.date.today().year:
-            raise ValueError("The user can't be from the future.")
-        if group not in ["user", "premium", "admin"]:
-            raise ValueError("Invalid group.")
 
         users = self._repository.get_users()
         user_exists = False
         for user in users:
             if user["id"] == id:
                 user_exists = True
+                break
 
         if not user_exists:
             raise ValueError("Invalid id.")
@@ -92,7 +91,7 @@ class DeleteUserController:
         self._repository.delete_user(id)
 
 
-create_users_controller = CreateUserController(users_repository)
+create_users_controller = CreateUserController(users_repository, user_dto)
 get_users_controller = GetUsersController(users_repository)
-update_users_controller = UpdateUserController(users_repository)
+update_users_controller = UpdateUserController(users_repository, user_dto)
 delete_users_controller = DeleteUserController(users_repository)
