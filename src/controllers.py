@@ -1,4 +1,5 @@
 import datetime
+import copy
 
 from src.repositories import UsersRepository, users_repository
 
@@ -30,7 +31,7 @@ class GetUsersController:
         self._repository = repository
 
     def get(self, id: int | None = None):
-        users = self._repository.get_users().copy()
+        users = copy.deepcopy(self._repository.get_users())
         for user in users:
             current_year = datetime.date.today().year
             user["age"] = current_year - user["birth_year"]
