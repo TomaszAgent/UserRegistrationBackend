@@ -6,7 +6,7 @@ import json
 
 import src.main
 from src.main import ping, get_users, get_user, post_user, app, patch_user
-from src.STATUS_CODES import OK, BAD_REQUEST, CREATED
+from src.STATUS_CODES import OK, BAD_REQUEST, CREATED, NO_CONTENT
 
 
 @pytest.fixture()
@@ -57,11 +57,11 @@ def test_get_users_returns_right_code() -> None:
     assert actual == OK
 
 
-def test_get_users_returns_right_value(aged_user: dict[str, int | str]) -> None:
+def test_get_users_returns_right_value(users: list[dict[str, int | str]]) -> None:
     with patch("src.main.get_users_controller") as get_users_controller:
         get_users_controller.get.return_value = users
         actual = get_users().data
-    assert actual == json.dumps([users]).encode()
+    assert actual == json.dumps(users).encode()
 
 
 def test_get_user_returns_right_200_code(users: list[dict[str, int | str]]) -> None:
@@ -144,16 +144,16 @@ def test_patch_user_passes_right_values(user: dict[str, int | str]) -> None:
     update_users_controller.update.assert_called_with(0, user)
 
 
-def test_patch_user_returns_right_200_code() -> None:
+def test_patch_user_returns_right_204_code(user: dict[str, int | str]) -> None:
     with (
         patch("src.main.update_users_controller"),
         app.test_request_context(json=user)
     ):
         actual = patch_user(0).status
-    assert actual == CREATED
+    assert actual == NO_CONTENT
 
 
-def test_patch_user_returns_right_400_code() -> None:
+def test_patch_user_returns_right_400_code(user: dict[str, int | str]) -> None:
     with (
         patch("src.main.update_users_controller") as update_users_controller,
         app.test_request_context(json=user)
@@ -163,12 +163,12 @@ def test_patch_user_returns_right_400_code() -> None:
     assert actual == BAD_REQUEST
 
 
-def test_patch_user_returns_right_error_code() -> None:
+def test_patch_user_returns_right_error_code(user: dict[str, int | str]) -> None:
     with (
         patch("src.main.update_users_controller") as update_users_controller,
         app.test_request_context(json=user)
     ):
         update_users_controller.update.side_effect = ValueError("Invalid id.")
         actual = patch_user(0).data
-    assert actual == "Invalid id."
+    assert actual == "Invalid id.".encode()
 
