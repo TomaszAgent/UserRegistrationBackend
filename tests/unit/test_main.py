@@ -5,7 +5,7 @@ import pytest
 import json
 
 import src.main
-from src.main import ping, get_users, get_user, post_user, app, patch_user
+from src.main import ping, get_users, get_user, post_user, app, patch_user, delete_user
 from src.STATUS_CODES import OK, BAD_REQUEST, CREATED, NO_CONTENT
 
 
@@ -172,3 +172,28 @@ def test_patch_user_returns_right_error_code(user: dict[str, int | str]) -> None
         actual = patch_user(0).data
     assert actual == "Invalid id.".encode()
 
+
+def test_delete_user_passes_right_id() -> None:
+    with patch("src.main.delete_users_controller") as delete_users_controller:
+        delete_user(0)
+    delete_users_controller.delete.assert_called_with(0)
+
+
+def test_delete_user_returns_right_204_code() -> None:
+    with patch("src.main.delete_users_controller"):
+        actual = delete_user(0).status
+    assert actual == NO_CONTENT
+
+
+def test_delete_user_returns_right_400_code() -> None:
+    with patch("src.main.delete_users_controller") as delete_users_controller:
+        delete_users_controller.delete.side_effect = ValueError
+        actual = delete_user(0).status
+    assert actual == BAD_REQUEST
+
+
+def test_delete_user_returns_right_error_code() -> None:
+    with patch("src.main.delete_users_controller") as delete_users_controller:
+        delete_users_controller.delete.side_effect = ValueError()
+        actual = delete_user(0).data
+    assert actual == "Invalid id."
